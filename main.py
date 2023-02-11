@@ -12,7 +12,7 @@ HOOK_HEIGHT = 100
 HOOK_RING_OFFSET_X = 13
 HOOK_OFFSET_Y = 60
 HOOK_SIZE = 40
-FONT_SIZE = 24
+FONT_SIZE = 32
 TRASH_WIDTH = 213
 TRASH_HEIGHT = 321
 
@@ -31,7 +31,6 @@ def draw_hook_and_line(win, x, y):
     win.blit(hook, (x, y))
     ring_x = x + (HOOK_WIDTH // 2) + HOOK_RING_OFFSET_X
     pygame.draw.line(win, LINE_COLOR, (ring_x, y), (ring_x, 0), LINE_WIDTH)
-    draw_hook_bounding_box(win, x, y)
 
 
 def draw_hook_bounding_box(win, x, y):
@@ -87,8 +86,13 @@ while run:
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
     draw_hook_and_line(win, mouse_x, mouse_y)
+    hook_bounding_box = draw_hook_bounding_box(win, mouse_x, mouse_y)
 
-    if len(messages) < len(lines):
+    for msg in messages:
+        if hook_bounding_box.colliderect(msg[2]):
+            messages.remove(msg)
+
+    if len(messages) == 0:
         for line in lines:
             msg = font.render(line, True, (0, 0, 0))
 
