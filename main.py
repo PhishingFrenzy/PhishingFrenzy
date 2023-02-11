@@ -1,6 +1,7 @@
-import pygame
 import random
-    
+
+import pygame
+
 SCREEN_WIDTH = 1920
 SCREEN_HEIGHT = 1080
 LINE_WIDTH = 4
@@ -11,7 +12,8 @@ HOOK_RING_OFFSET_X = 13
 FONT_SIZE = 24
 
 pygame.init()
-win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+# win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
 pygame.mouse.set_visible(False)
 font = pygame.font.SysFont("Arial", FONT_SIZE, True)
 
@@ -24,19 +26,32 @@ def draw_hook_and_line(win, x, y):
     ring_x = x + (HOOK_WIDTH // 2) + HOOK_RING_OFFSET_X
     pygame.draw.line(win, LINE_COLOR, (ring_x, y), (ring_x, 0), LINE_WIDTH)
 
+
 def draw_bounding_rect(win, msg_rect):
     padding_x = 10
     padding_y = 10
     bounding_rect = pygame.draw.rect(
         win,
-        (0, 0, 0), 
-        [msg_rect.left - padding_x // 2, msg_rect.top - padding_y // 2, msg_rect.width + padding_x, msg_rect.height + padding_y],
-        width=2
+        (0, 0, 0),
+        [
+            msg_rect.left - padding_x // 2,
+            msg_rect.top - padding_y // 2,
+            msg_rect.width + padding_x,
+            msg_rect.height + padding_y,
+        ],
+        width=2,
     )
     return bounding_rect
 
+
 def validate_rect(rect):
-    return (rect.top >= 0) and (rect.bottom <= SCREEN_HEIGHT) and (rect.left >= 0) and (rect.right <= SCREEN_WIDTH)
+    return (
+        (rect.top >= 0)
+        and (rect.bottom <= SCREEN_HEIGHT)
+        and (rect.left >= 0)
+        and (rect.right <= SCREEN_WIDTH)
+    )
+
 
 lines = [
     "This is sentence 1",
@@ -57,14 +72,17 @@ while run:
     if len(messages) < len(lines):
         for line in lines:
             msg = font.render(line, True, (0, 0, 0))
-            
+
             valid_pos = False
             while not valid_pos:
-                msg_pos = (random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
+                msg_pos = (
+                    random.randint(0, SCREEN_WIDTH),
+                    random.randint(0, SCREEN_HEIGHT),
+                )
                 msg_rect = win.blit(msg, msg_pos)
                 bounding_rect = draw_bounding_rect(win, msg_rect)
                 valid_pos = validate_rect(bounding_rect)
-            
+
             messages.append([msg, msg_rect, bounding_rect, "right", "down"])
     else:
         dx = 2
@@ -81,13 +99,18 @@ while run:
             elif y_dir == "up" and msg[1].top - dy <= 0:
                 msg[-1] = "down"
 
-            new_pos = (msg[1].left + (dx if msg[-2] == "right" else - dx), msg[1].top + (dy if msg[-1] == "down" else -dy))
+            new_pos = (
+                msg[1].left + (dx if msg[-2] == "right" else -dx),
+                msg[1].top + (dy if msg[-1] == "down" else -dy),
+            )
             msg[1] = win.blit(msg[0], new_pos)
             msg[2] = draw_bounding_rect(win, msg[1])
 
     pygame.display.update()
-    
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_q:
+                run = False
