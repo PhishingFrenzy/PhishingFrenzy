@@ -1,5 +1,6 @@
 import random
 
+import nltk
 import pygame
 
 SCREEN_WIDTH = 1920
@@ -9,22 +10,37 @@ LINE_COLOR = (0, 0, 0)
 HOOK_WIDTH = 54
 HOOK_HEIGHT = 100
 HOOK_RING_OFFSET_X = 13
+HOOK_OFFSET_Y = 60
+HOOK_SIZE = 40
 FONT_SIZE = 24
+TRASH_WIDTH = 213
+TRASH_HEIGHT = 321
 
 pygame.init()
 # win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
 win = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.FULLSCREEN)
-pygame.mouse.set_visible(False)
+# pygame.mouse.set_visible(False)
 font = pygame.font.SysFont("Arial", FONT_SIZE, True)
 
 bg = pygame.image.load("assets/background.webp")
 hook = pygame.image.load("assets/hook_100h.png").convert_alpha()
+trash = pygame.image.load("assets/trash.png").convert_alpha()
 
 
 def draw_hook_and_line(win, x, y):
     win.blit(hook, (x, y))
     ring_x = x + (HOOK_WIDTH // 2) + HOOK_RING_OFFSET_X
     pygame.draw.line(win, LINE_COLOR, (ring_x, y), (ring_x, 0), LINE_WIDTH)
+    draw_hook_bounding_box(win, x, y)
+
+
+def draw_hook_bounding_box(win, x, y):
+    return pygame.draw.rect(
+        win,
+        (0, 0, 0),
+        [x, y + HOOK_OFFSET_Y, HOOK_SIZE, HOOK_SIZE],
+        width=2,
+    )
 
 
 def draw_bounding_rect(win, msg_rect):
@@ -53,10 +69,12 @@ def validate_rect(rect):
     )
 
 
-lines = [
-    "This is sentence 1",
-    "This is sentence 2",
-]
+lines = nltk.sent_tokenize(
+    """\
+Thanks for asking. There’s a “forgot password” link on the login screen in the app. (see image beside when login).
+In addition to that, there are a couple other options on the web (but not in the app).
+Please Reset Your Password For your security, we are strengthening our password requirements and as a result, your existing password has been disabled."""
+)
 
 messages = []
 
@@ -65,6 +83,7 @@ run = True
 while run:
     clock.tick(60)
     win.blit(bg, (0, 0))
+    win.blit(trash, (SCREEN_WIDTH - TRASH_WIDTH, SCREEN_HEIGHT - TRASH_HEIGHT))
 
     mouse_x, mouse_y = pygame.mouse.get_pos()
     draw_hook_and_line(win, mouse_x, mouse_y)
