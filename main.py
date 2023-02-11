@@ -38,6 +38,12 @@ def draw_bounding_rect(win, msg_rect):
 def validate_rect(rect):
     return (rect.top >= 0) and (rect.bottom <= SCREEN_HEIGHT) and (rect.left >= 0) and (rect.right <= SCREEN_WIDTH)
 
+lines = [
+    "This is sentence 1",
+    "This is sentence 2",
+]
+
+messages = []
 
 clock = pygame.time.Clock()
 run = True
@@ -48,15 +54,36 @@ while run:
     mouse_x, mouse_y = pygame.mouse.get_pos()
     draw_hook_and_line(win, mouse_x, mouse_y)
 
-    msg = font.render("This is sentence 1", True, (0, 0, 0))
-    msg_pos = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
-    msg_rect = win.blit(msg, msg_pos)
-    draw_bounding_rect(win, msg_rect)
+    if len(messages) < len(lines):
+        for line in lines:
+            msg = font.render(line, True, (0, 0, 0))
+            
+            valid_pos = False
+            while not valid_pos:
+                msg_pos = (random.randint(0, SCREEN_WIDTH), random.randint(0, SCREEN_HEIGHT))
+                msg_rect = win.blit(msg, msg_pos)
+                bounding_rect = draw_bounding_rect(win, msg_rect)
+                valid_pos = validate_rect(bounding_rect)
+            
+            messages.append([msg, msg_rect, bounding_rect, "right", "down"])
+    else:
+        dx = 2
+        dy = 2
+        for i, msg in enumerate(messages):
+            x_dir = msg[-2]
+            y_dir = msg[-1]
+            if x_dir == "right" and msg[1].right + dx >= SCREEN_WIDTH:
+                msg[-2] = "left"
+            elif x_dir == "left" and msg[1].left - dx <= 0:
+                msg[-2] = "right"
+            elif y_dir == "down" and msg[1].bottom + dy >= SCREEN_HEIGHT:
+                msg[-1] = "up"
+            elif y_dir == "up" and msg[1].top - dy <= 0:
+                msg[-1] = "down"
 
-    msg = font.render("This is sentence 2", True, (0, 0, 0))
-    msg_pos = (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 4)
-    msg_rect = win.blit(msg, msg_pos)
-    draw_bounding_rect(win, msg_rect)
+            new_pos = (msg[1].left + (dx if msg[-2] == "right" else - dx), msg[1].top + (dy if msg[-1] == "down" else -dy))
+            msg[1] = win.blit(msg[0], new_pos)
+            msg[2] = draw_bounding_rect(win, msg[1])
 
     pygame.display.update()
     
